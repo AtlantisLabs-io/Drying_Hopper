@@ -6,6 +6,7 @@
 */
 
 #include <LiquidCrystal_I2C.h>
+#include <avr/wdt.h>
 
 //include libraries
 #include "ClickEncoder.h"
@@ -119,6 +120,8 @@ void timerIsr() {
 }
 
 void setup() {
+  wdt_disable(); //Datasheet recommends disabling WDT right away in case of low probabibliy event
+
   Serial.begin(250000);
   //Set initial state
   currentState = DISPLAY_MENU;
@@ -149,6 +152,8 @@ void setup() {
 
   //Print initial values to LCD
   drawMenu();
+  Serial.end();
+  setWDT(0b00001000);
 }
 
 void loop() {
@@ -380,7 +385,6 @@ void changeSetTemp() {
 
 void changeHeaterDS() {
   static int prevHeaterDS;
-
   //If the state has just been changed to changeSetTemp, set up the screen
   if (stateChanged) {
     stateChanged = false;
@@ -389,9 +393,10 @@ void changeHeaterDS() {
     lcd.print(menu[selectedItem].text);
     lcd.setCursor(9 - getDigits(*menu[selectedItem].value), 1);
     lcd.print(*menu[selectedItem].value);
+      delay(2500);
   }
   bState = encoder->getButton();
-
+  
   //If the button has been clicked, switch to selected item's state
   if (bState == ClickEncoder::Clicked) {
     heater.setMode(MANUAL);
@@ -594,7 +599,7 @@ void safetyCheck() {
       return;
     }
   }
-
+  wdt_reset(); //Reset the WDT
 }
 
 void safetyShutdown() {
@@ -604,6 +609,13 @@ void safetyShutdown() {
     ;
   }
 
+}
+
+//this function setups up and starts the watchdog timer
+void setWDT(byte sWDT) {
+   WDTCSR |= 0b00011000;
+   WDTCSR = sWDT |  WDTO_2S; //Set WDT based user setting and for 2 second interval
+   wdt_reset();
 }
 
 
