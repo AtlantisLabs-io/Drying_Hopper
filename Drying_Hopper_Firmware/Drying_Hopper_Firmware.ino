@@ -1,11 +1,11 @@
 /* Todo
   -Use a watchdog timer to make sure the controller doesn't lock up.
   - check on increaed power to heater without increased temp. (bad thermistor or bad heater)
-  -c heck decreased power with increase in temp. (SSR stuck on?)
+  - check decreased power with increase in temp. (SSR stuck on?)
 
 */
 
-#include <LiquidCrystal_I2C.h>
+#include <LiquidCrystal_I2C.h> //https://github.com/johnrickman/LiquidCrystal_I2C
 #include <avr/wdt.h>
 
 //include libraries
